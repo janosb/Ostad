@@ -18,4 +18,9 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^sections$', 'sections.views.list_sections'),
+    url(r'^sections/add$', 'sections.views.add_section'),
+    url(r'^sections/save$', 'sections.views.save_section'),
+    url(r'^sections/delete$', 'sections.views.remove_sections')
+
 ]
