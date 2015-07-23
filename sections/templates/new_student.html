@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Sections</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+<div class="container">
+    <form action="/students/save" method="post" role="form">
+        {% csrf_token %}
+
+        {% for field in form %}
+            <div class="form-group">
+                {{ field.errors }}
+                {{ field.label_tag }} {{ field }}
+            </div>
+        {% endfor %}
+        <input type="hidden" name="section_id" value="{{ section_info.id }}" />
+        <input type="hidden" name="section_day" value="{{ section_info.day }}" />
+        <input type="hidden" name="section_time" value="{{ section_info.time }}" />
+        <input type="hidden" name="section_location" value="{{ section_info.location }}" />
+        <input type="submit" value="Submit" class="btn btn-default" />
+    </form>
+</div>
+</body>
+</html>

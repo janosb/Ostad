@@ -21,6 +21,10 @@ urlpatterns = [
     url(r'^sections$', 'sections.views.list_sections'),
     url(r'^sections/add$', 'sections.views.add_section'),
     url(r'^sections/save$', 'sections.views.save_section'),
-    url(r'^sections/delete$', 'sections.views.remove_sections')
+    url(r'^sections/delete$', 'sections.views.remove_sections'),
+
+    url(r'^sections/signup/(?P<section_id>\d+)$', 'sections.views.add_student'),
+    url(r'^students/save$', 'sections.views.save_student'),
+    url(r'^students/delete$', 'sections.views.remove_students')
 
 ]
