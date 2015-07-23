@@ -139,14 +139,17 @@ def save_student(request):
                 message = "We have added you to the section on %s %s in %s. Current enrollement is %d / %d." \
                           % (section.day_of_week, section.time_string, section.location,
                              section.enrollment, section.max_size)
-                return render(request, 'add_success.html', {'message': message})
+                return render(request, 'add_result.html', {'title': 'Success!', 'message': message})
             else:
                 student = None
                 if add_status == AddStatus.FULL_SECTION:
+                    title = 'Hmmm...'
                     message = "Sorry, that section is already full! Please register for another."
                 elif add_status == AddStatus.NON_EXISTENT_SECTION:
+                    title = 'Hmmm...'
                     message = "Sorry, that section does not exist! Please register for another."
                 elif add_status == AddStatus.INVALID_EMAIL:
+                    title = 'Hmmm...'
                     message = "Invalid email. Please provide your university-issued (berkeley.edu) email address."
                 elif add_status == AddStatus.STUDENT_ALREADY_EXISTS:
                     student = Student.objects.filter(full_name=request.POST.get('full_name'))
@@ -154,17 +157,19 @@ def save_student(request):
                         student = Student.objects.filter(email_address=request.POST.get('email'))
                     student = student.first()
                     previous_section = student.current_section
-                    if previous_section.id == request.POST.get('section_id'):
+                    if previous_section.id == int(request.POST.get('section_id')):
+                        title = 'Already registered'
                         message = "We found you in our database already. Please check your status below. See you in class!"
                     else:
                         newer_section = Section.objects.get(id=request.POST.get('section_id'))
-
+                        student.current_section = newer_section
+                        student.save()
                         #update enrollment numbers
                         update_enrollment_after_switch(previous_section, newer_section)
 
-                        student.current_section = newer_section
+                        title = "Switched Sections"
                         message = "You have successfully switched sections. Please check your status below. See you in class!"
-                return render(request, 'add_failure.html', {'message': message, 'user_info': student})
+                return render(request, 'add_result.html', {'title': title, 'message': message, 'user_info': student})
 
         else:
             return HttpResponse(str(form))
