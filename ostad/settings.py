@@ -24,8 +24,9 @@ SECRET_KEY = 'hp&*mvu&soi0^ki=37)0zs8qb*cp7g+$@j3db*iratm6=3n16w'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+TEMPLATE_DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
