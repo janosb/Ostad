@@ -74,21 +74,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'ostad.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/1.8/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',  # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'ostad',                      # Or path to database file if using sqlite3.
-        'USER': 'ostad_admin',                      # Not used with sqlite3.
-        'PASSWORD': 'testing',                  # Not used with sqlite3.
-        'HOST': 'localhost',
-        'PORT': '5432',                      # Set to empty string for default. Not used with sqlite3.
-    }
-}
-
-
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
 
@@ -110,3 +95,10 @@ STATIC_URL = '/static/'
 
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "static"),)
+
+
+try:
+    from settings_local import *
+except ImportError:
+    pass
+
