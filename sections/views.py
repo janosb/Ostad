@@ -39,7 +39,7 @@ def update_enrollment_after_switch(previous_section, newer_section):
 
 
 def list_sections(request, class_id):
-    all_sections = Section.objects.filter(parent_class=class_id)
+    all_sections = Section.objects.filter(parent_class=class_id).order_by('id')
     json_list = []
     for section in all_sections:
         json_list.append(section.to_json())
@@ -50,19 +50,6 @@ def list_sections(request, class_id):
                                                   'class_details': class_details,
                                                   'classes': get_all_classes(),
                                                   'is_admin': request.user.is_authenticated()})
-
-
-@login_required(redirect_field_name='/sections/sectionform/')
-def list_and_add_sections(request, class_id):
-    all_sections = Section.objects.filter(parent_class=class_id)
-    json_list = []
-    for section in all_sections:
-        json_list.append(section.to_json())
-    form = SectionForm()
-
-    class_details = ClassDetails.objects.get(id=class_id)
-    return render(request, 'new_section.html', {'form': form, 'current_list': json_list, 'class_details': class_details,
-                                                'classes': get_all_classes()})
 
 
 def add_section(request, class_id):
@@ -101,9 +88,13 @@ def save_section(request, class_id):
 
 
 # TODO: REMOVE THIS AFTER TESTING
-@login_required(redirect_field_name='/sections/delete')
-def remove_sections(request):
-    Section.objects.all().delete()
+@login_required()
+def remove_sections(request, class_id):
+    if class_id:
+        class_instance = ClassDetails.objects.get(id=class_id)
+        Section.objects.filter(parent_class=class_instance).delete()
+    else:
+        Section.objects.all().delete()
     return HttpResponseRedirect('/sections')
 
 
@@ -154,6 +145,7 @@ def add_student(request, class_id, section_id):
 
 
 def save_student(request, class_id):
+    class_instance = ClassDetails.objects.get(id=class_id)
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
         # create a form instance and populate it with data from the request:
@@ -171,7 +163,7 @@ def save_student(request, class_id):
                           % (section.day_of_week, section.time_string, section.location,
                              section.enrollment, section.max_size)
                 return render(request, 'add_result.html', {'title': 'Success!', 'message': message,
-                                                'class_details': ClassDetails.objects.get(id=class_id),
+                                                'class_details': class_instance,
                                                 'classes': get_all_classes()})
             else:
                 student = None
@@ -203,19 +195,18 @@ def save_student(request, class_id):
                         title = "Switched Sections"
                         message = "You have successfully switched sections. Please check your status below. See you in class!"
                 return render(request, 'add_result.html', {'title': title, 'message': message, 'user_info': student,
-                                                'classes': get_all_classes()})
+                                                'classes': get_all_classes(), 'class_details': class_instance})
 
         else:
-            class_details = ClassDetails.objects.get(id=class_id)
             section = Section.objects.get(id=section_id)
             return render(request, 'new_student.html', {'form': form, 'section_info': section.to_json(),
-                                                        'class_details': class_details, 'classes': get_all_classes()})
+                                                        'class_details': class_instance, 'classes': get_all_classes()})
     else:
         return HttpResponseRedirect('/sections')
 
 
 # TODO: REMOVE THIS AFTER TESTING
-@login_required(redirect_field_name='/students/delete')
+@login_required()
 def remove_students(request):
     Student.objects.all().delete()
     for section in Section.objects.all():
@@ -241,7 +232,7 @@ def save_class(request):
 
 
 # TODO: REMOVE THIS AFTER TESTING
-@login_required(redirect_field_name='/classes/delete')
+@login_required()
 def remove_classes(request):
     ClassDetails.objects.all().delete()
     return HttpResponseRedirect('/sections')
