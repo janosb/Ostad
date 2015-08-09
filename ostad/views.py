@@ -7,6 +7,8 @@ def home(request):
     return HttpResponseRedirect('/sections')
 
 def home_login(request):
+    if request.user.is_authenticated():
+        return HttpResponseRedirect('/sections')
     return render(request, 'login.html', {'classes': get_all_classes()})
 
 

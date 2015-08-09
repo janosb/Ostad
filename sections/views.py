@@ -8,7 +8,7 @@ from .helpers import AddStatus, get_all_classes
 
 
 def show_classes(request):
-    return render(request, 'classes.html', {"classes": get_all_classes()})
+    return render(request, 'classes.html', {"classes": get_all_classes(), 'is_admin': request.user.is_authenticated()})
 
 def new_section(day, start_time, end_time, max_size=25, location=None):
     time_str = "%s-%s" % (start_time, end_time)
