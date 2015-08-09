@@ -32,6 +32,7 @@ urlpatterns = [
     url(r'^sections/signup/(?P<class_id>\d+)/(?P<section_id>\d+)$', 'sections.views.add_student'),
     url(r'^students/save/(?P<class_id>\d+)$', 'sections.views.save_student'),
     url(r'^students/delete$', 'sections.views.remove_students'),
+    url(r'^students/delete/(?P<class_id>\d+)/(?P<student_id>\d+)$', 'sections.views.remove_students'),
 
     url(r'^classes/save', 'sections.views.save_class'),
     url(r'^classes/delete', 'sections.views.remove_classes'),
@@ -40,4 +41,8 @@ urlpatterns = [
     #url(r'^customform/save$', 'sections.views.custom_form_save')
 
     url(r'^captcha/', include('captcha.urls')),
+
+    # TODO: remove after testing
+    url(r'^populate', 'ostad.views.generate_mock_data'),
+
 ]

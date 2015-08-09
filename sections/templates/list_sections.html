@@ -24,6 +24,7 @@
             <th>Time</th>
             <th>Location</th>
             <th>Enrollment</th>
+            <th></th>
         </tr>
         </thead>
         <tbody>
@@ -47,6 +48,34 @@
     {% endif %}
 
     {%  if is_admin %}
+        <h1>Rosters</h1>
+        <table class="table">
+        <thead>
+        <tr>
+            <th>Section Id</th>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th>Day</th>
+            <th>Time</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for section in current_list %}
+            {% for student in section.students %}
+                <tr>
+                    <td>{{ section.id }}</td>
+                    <td>{{ student.full_name }}</td>
+                    <td>{{ student.email_address }}</td>
+                    <td>{{ section.day }}</td>
+                    <td>{{ section.time }}</td>
+                    <td><a href="/students/delete/{{ class_details.id }}/{{ student.id }}">Delete</a></td>
+                </tr>
+            {% endfor %}
+        {% endfor %}
+        </tbody>
+    </table>
+
         <h1>Add a new section</h1>
 
         <form action="/sections/save/{{ class_details.id }}" method="post" role="form">

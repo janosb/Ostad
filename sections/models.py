@@ -23,7 +23,8 @@ class Section(models.Model):
     def to_json(self):
         return {"day": self.day_of_week, "time": self.time_string,
                          "location": self.location, "max_size": self.max_size,
-                         "enrollment": self.enrollment, "id": self.id}
+                         "enrollment": self.enrollment, "id": self.id,
+                         "students": Student.objects.filter(current_section=self.id).values()}
 
     def reset_enrollment(self):
         self.enrollment = 0

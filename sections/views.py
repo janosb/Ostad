@@ -217,12 +217,22 @@ def save_student(request, class_id):
 
 # TODO: REMOVE THIS AFTER TESTING
 @login_required()
-def remove_students(request):
-    Student.objects.all().delete()
-    for section in Section.objects.all():
-        section.reset_enrollment()
-        section.save()
-    return HttpResponseRedirect('/sections')
+def remove_students(request, class_id, student_id):
+    if not student_id:
+        Student.objects.all().delete()
+        for section in Section.objects.all():
+            section.reset_enrollment()
+            section.save()
+    else:
+        try:
+            student = Student.objects.get(id=student_id, parent_class_id=class_id)
+            section = student.current_section
+            section.delete_student()
+            section.save()
+            student.delete()
+        except Student.DoesNotExist:
+            print "Invalid class id %s or student id %s" % (class_id, student_id)
+    return HttpResponseRedirect('/sections/%s' % class_id)
 
 
 def save_class(request):
