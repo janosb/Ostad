@@ -1,10 +1,14 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
-from models import Section, Student
-from .forms import SectionForm, StudentForm
-from .helpers import AddStatus
+from django.contrib.auth.decorators import login_required
+from models import Section, Student, ClassDetails, CustomData
+from .forms import SectionForm, StudentForm, CustomForm
+from .helpers import AddStatus, get_all_classes
 
+
+def show_classes(request):
+    return render(request, 'classes.html', {"classes": get_all_classes()})
 
 def new_section(day, start_time, end_time, max_size=25, location=None):
     time_str = "%s-%s" % (start_time, end_time)
@@ -31,16 +35,32 @@ def update_enrollment_after_switch(previous_section, newer_section):
     newer_section.save()
 
 
-def list_sections(request):
+def list_sections(request, class_id):
     all_sections = Section.objects.all()
     json_list = []
     for section in all_sections:
         json_list.append(section.to_json())
     form = SectionForm()
-    return render(request, 'new_section.html', {'form': form, 'current_list': json_list})
+
+    class_details = ClassDetails.objects.get(id=class_id)
+    return render(request, 'list_sections.html', {'form': form, 'current_list': json_list, 'class_details': class_details,
+                                                'classes': get_all_classes()})
 
 
-def add_section(request):
+@login_required(redirect_field_name='/sections/sectionform/')
+def list_and_add_sections(request, class_id):
+    all_sections = Section.objects.all()
+    json_list = []
+    for section in all_sections:
+        json_list.append(section.to_json())
+    form = SectionForm()
+
+    class_details = ClassDetails.objects.get(id=class_id)
+    return render(request, 'new_section.html', {'form': form, 'current_list': json_list, 'class_details': class_details,
+                                                'classes': get_all_classes()})
+
+
+def add_section(request, class_id):
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
         # create a form instance and populate it with data from the request:
@@ -55,7 +75,10 @@ def add_section(request):
     else:
         form = SectionForm()
 
-    return render(request, 'new_section.html', {'form': form, 'current_list': ''})
+    class_details = ClassDetails.objects.get(id=class_id)
+    return render(request, 'new_section.html', {'form': form, 'current_list': '', 'class_details': class_details,
+                                                'classes': get_all_classes()})
+
 
 def save_section(request):
         # if this is a POST request we need to process the form data
@@ -64,22 +87,22 @@ def save_section(request):
         form = SectionForm(request.POST)
         # check whether it's valid:
         if form.is_valid():
-            new_section(request.POST.get('day_of_week'), request.POST.get('t_start'),
-                        request.POST.get('t_end'), location=request.POST.get('location', None),
-                        max_size=request.POST.get('max_size'))
+            data = form.cleaned_data
+            new_section(data.get("day_of_week"), data.get("t_start"), data.get("t_end"), location=data.get("location"),
+                        max_size=data.get("max_size"))
             return HttpResponseRedirect('/sections')
     else:
         return HttpResponseRedirect('/sections/add')
 
+
 # TODO: REMOVE THIS AFTER TESTING
+@login_required(redirect_field_name='/sections/delete')
 def remove_sections(request):
     Section.objects.all().delete()
     return HttpResponseRedirect('/sections')
 
 
-
-
-def new_student(full_name, email, section_id):
+def new_student(full_name, email, class_id, section_id):
     try:
         section = Section.objects.get(id=section_id)
         if section.enrollment >= section.max_size:
@@ -105,41 +128,46 @@ def new_student(full_name, email, section_id):
         # expected behavior
         pass
 
-    if "berkeley.edu" not in email:
-        return AddStatus.INVALID_EMAIL
-
     student, created = Student.objects.get_or_create(full_name=full_name, email_address=email, current_section=section)
     if not created:
         return AddStatus.STUDENT_ALREADY_EXISTS
     student.save()
     return AddStatus.SUCCESS
 
-def add_student(request, section_id):
+
+def add_student(request, class_id, section_id):
     try:
         section = Section.objects.get(id=section_id)
     except Section.DoesNotExist:
         print "Tried to get unregistered section %d" % section_id
         return HttpResponseRedirect('/sections')
     form = StudentForm()
-    return render(request, 'new_student.html', {'form': form, 'section_info': section.to_json()})
 
-def save_student(request):
+    class_details = ClassDetails.objects.get(id=class_id)
+    return render(request, 'new_student.html', {'form': form, 'section_info': section.to_json(), 'class_details': class_details,
+                                                'classes': get_all_classes()})
+
+
+def save_student(request, class_id):
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
         # create a form instance and populate it with data from the request:
         form = StudentForm(request.POST)
+        section_id = int(request.POST.get('section_id'))
         # check whether it's valid:
         if form.is_valid():
-            add_status = new_student(request.POST.get('full_name'), request.POST.get('email'),
-                        request.POST.get('section_id'))
+            data = form.cleaned_data
+            add_status = new_student(data.get("full_name"), data.get("email"), class_id, section_id)
             if add_status == AddStatus.SUCCESS:
-                section = Section.objects.get(id=request.POST.get('section_id'))
+                section = Section.objects.get(id=section_id)
                 section.enrollment += 1
                 section.save()
                 message = "We have added you to the section on %s %s in %s. Current enrollement is %d / %d." \
                           % (section.day_of_week, section.time_string, section.location,
                              section.enrollment, section.max_size)
-                return render(request, 'add_result.html', {'title': 'Success!', 'message': message})
+                return render(request, 'add_result.html', {'title': 'Success!', 'message': message,
+                                                'class_details': ClassDetails.objects.get(id=class_id),
+                                                'classes': get_all_classes()})
             else:
                 student = None
                 if add_status == AddStatus.FULL_SECTION:
@@ -152,16 +180,16 @@ def save_student(request):
                     title = 'Hmmm...'
                     message = "Invalid email. Please provide your university-issued (berkeley.edu) email address."
                 elif add_status == AddStatus.STUDENT_ALREADY_EXISTS:
-                    student = Student.objects.filter(full_name=request.POST.get('full_name'))
+                    student = Student.objects.filter(full_name=data.get("full_name"))
                     if len(student) != 1:
-                        student = Student.objects.filter(email_address=request.POST.get('email'))
+                        student = Student.objects.filter(email_address=data.get("email"))
                     student = student.first()
                     previous_section = student.current_section
-                    if previous_section.id == int(request.POST.get('section_id')):
+                    if previous_section.id == section_id:
                         title = 'Already registered'
                         message = "We found you in our database already. Please check your status below. See you in class!"
                     else:
-                        newer_section = Section.objects.get(id=request.POST.get('section_id'))
+                        newer_section = Section.objects.get(id=section_id)
                         student.current_section = newer_section
                         student.save()
                         #update enrollment numbers
@@ -169,18 +197,60 @@ def save_student(request):
 
                         title = "Switched Sections"
                         message = "You have successfully switched sections. Please check your status below. See you in class!"
-                return render(request, 'add_result.html', {'title': title, 'message': message, 'user_info': student})
+                return render(request, 'add_result.html', {'title': title, 'message': message, 'user_info': student,
+                                                'classes': get_all_classes()})
 
         else:
-            return HttpResponse(str(form))
+            class_details = ClassDetails.objects.get(id=class_id)
+            section = Section.objects.get(id=section_id)
+            return render(request, 'new_student.html', {'form': form, 'section_info': section.to_json(),
+                                                        'class_details': class_details, 'classes': get_all_classes()})
     else:
         return HttpResponseRedirect('/sections')
 
 
 # TODO: REMOVE THIS AFTER TESTING
+@login_required(redirect_field_name='/students/delete')
 def remove_students(request):
     Student.objects.all().delete()
     for section in Section.objects.all():
         section.reset_enrollment()
         section.save()
     return HttpResponseRedirect('/sections')
+
+
+#
+# CUSTOM FORMS
+# TODO: does not handle multiple choice fields right now
+#
+def custom_signup_form(request):
+    # TODO: get class id from somewhere
+    class_details = ClassDetails.objects.first()
+    form = CustomForm()
+    return render(request, 'custom_form.html', {'form': form, 'class_details': class_details})
+
+
+def custom_form_save(request):
+    # if this is a POST request we need to process the form data
+    if request.method == 'POST':
+        # create a form instance and populate it with data from the request:
+        form = CustomForm(request.POST)
+        # check whether it's valid:
+        if form.is_valid():
+            new_custom_form_entry(form)
+        else:
+            message = 'Form was not valid...'
+            # TODO: get class id from somewhere
+            class_details = ClassDetails.objects.first()
+            return render(request, 'custom_form.html', {'form': form, 'class_details': class_details,
+                                                        'error_message': message})
+    return HttpResponse("Thanks!")
+
+
+def new_custom_form_entry(form):
+    fields = form.get_fields()
+    data = form.cleaned_data
+    record = CustomData()
+    for field in fields:
+        setattr(record, field, data.get(field))
+    record.save()

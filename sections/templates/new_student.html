@@ -5,7 +5,7 @@
     <div class="row">
         <div class="col-lg-12">
             <h1 class="page-header">
-                Tamarkoz <small>Sufi Meditation</small>
+                {{ class_details.title }} <small>{{ class_details.subtitle }}</small>
             </h1>
             <ol class="breadcrumb">
                 <li class="active">
@@ -16,7 +16,7 @@
     </div>
     <!-- /.row -->
 
-    <form action="/students/save" method="post" role="form">
+    <form action="/students/save/{{ class_details.id }}" method="post" role="form">
         {% csrf_token %}
 
         {% for field in form %}

@@ -19,13 +19,22 @@ from django.contrib import admin
 urlpatterns = [
     url(r'^$', 'ostad.views.home'),
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^sections$', 'sections.views.list_sections'),
-    url(r'^sections/add$', 'sections.views.add_section'),
-    url(r'^sections/save$', 'sections.views.save_section'),
+    url(r'^loginpage$', 'ostad.views.home_login'),
+    url(r'^login$', 'ostad.views.login_user'),
+    url(r'^logout$', 'ostad.views.logout_user'),
+    url(r'^sections$', 'sections.views.show_classes'),
+    url(r'^sections/(?P<class_id>\d+)$', 'sections.views.list_sections'),
+    url(r'^sections/sectionform/(?P<class_id>\d+)$', 'sections.views.list_and_add_sections'),
+    url(r'^sections/add/(?P<class_id>\d+)$', 'sections.views.add_section'),
+    url(r'^sections/save/(?P<class_id>\d+)$', 'sections.views.save_section'),
     url(r'^sections/delete$', 'sections.views.remove_sections'),
 
-    url(r'^sections/signup/(?P<section_id>\d+)$', 'sections.views.add_student'),
-    url(r'^students/save$', 'sections.views.save_student'),
-    url(r'^students/delete$', 'sections.views.remove_students')
+    url(r'^sections/signup/(?P<class_id>\d+)/(?P<section_id>\d+)$', 'sections.views.add_student'),
+    url(r'^students/save/(?P<class_id>\d+)$', 'sections.views.save_student'),
+    url(r'^students/delete$', 'sections.views.remove_students'),
 
+    #url(r'^$', 'sections.views.custom_signup_form'),
+    #url(r'^customform/save$', 'sections.views.custom_form_save')
+
+    url(r'^captcha/', include('captcha.urls')),
 ]

@@ -1,18 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>{{ title }}</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-</head>
-<body>
+{% extends 'base.html' %}
+{% block body %}
 <div class="container">
     <h1>{{ title }}</h1>
     <p>{{ message }}</p>
-    <p><a href="/sections">Go Back</a></p>
+    <p><a href="/sections/{{ class_details.id }}">Go Back</a></p>
     {% if user_info %}
         <h2>User info</h2>
         <table class="table">
@@ -23,5 +14,4 @@
         </table>
     {% endif %}
 </div>
-</body>
-</html>
+{% endblock %}

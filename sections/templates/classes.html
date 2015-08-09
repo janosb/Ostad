@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block body %}
+
+        <div class="col-lg-12">
+            <h1 class="page-header">
+                Classes
+            </h1>
+            <ol class="breadcrumb">
+                {% for class in classes %}
+                <li class="active">
+                    <i class="fa fa-dashboard"><a href="/sections/{{ class.id }}"> {{ class.title }} </a></i>
+                </li>
+                {%  endfor %}
+            </ol>
+        </div>
+
+        <div class="col-lg-12">
+            <h1>Add a class</h1>
+
+            <form action="/classes/add" method="post" name="Add_class" class="form-signin">
+                {% csrf_token %}
+            </form>
+        </div>
+</div>
+{% endblock %}

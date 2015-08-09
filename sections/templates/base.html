@@ -38,6 +38,16 @@
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
 
+    <!-- login page -->
+    <link href="{% static 'css/login.css' %}" rel="stylesheet" type="text/css"  />
+
+    <!--<style>
+        ul
+        {
+            list-style-type: none;
+        }
+    </style>-->
+
 </head>
 </head>
 
@@ -63,15 +73,17 @@
                 <!--<li class="active">
                     <a href="index.html"><i class="fa fa-fw fa-dashboard"></i> Home</a>
                 </li>-->
+                {% for class in classes %}
                 <li>
-                    <a href="/sections"><i class="fa fa-fw fa-edit"></i> Register for Sections</a>
+                    <a href="/sections/{{ class.id }}"><i class="fa fa-fw fa-edit"></i> {{ class.title }}</a>
                 </li>
+                {% endfor %}
                 <li>
-                    <a href="/sections"><i class="fa fa-fw fa-table"></i> Rosters</a>
+                    <a href="/loginpage"><i class="fa fa-fw fa-table"></i> Admin</a>
                 </li>
-                <li>
+                <!--<li>
                     <a href="/sections"><i class="fa fa-fw fa-bar-chart-o"></i> Charts</a>
-                </li>
+                </li>-->
             </ul>
         </div>
         <!-- /.navbar-collapse -->

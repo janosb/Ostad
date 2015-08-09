@@ -1,6 +1,17 @@
 from django.db import models
 
 
+class ClassDetails(models.Model):
+    title = models.CharField(null=False, max_length=20)
+    subtitle = models.CharField(null=False, max_length=40)
+
+    def to_string(self):
+        return ": ".join([self.title, self.subtitle])
+
+    def __unicode__(self):
+        return ": ".join([self.title, self.subtitle])
+
+
 class Section(models.Model):
 
     day_of_week = models.CharField(null=False, max_length=9)
@@ -23,6 +34,10 @@ class Section(models.Model):
     def delete_student(self):
         self.enrollment -= 1
 
+    def __unicode__(self):
+        return "/".join([self.day_of_week, self.time_string, self.location])
+
+
 class Student(models.Model):
 
     full_name = models.CharField(null=False, max_length=100)
@@ -38,3 +53,28 @@ class Student(models.Model):
 
     def get_section(self):
         return self.current_section
+
+    def __unicode__(self):
+        return self.full_name
+
+
+
+#
+# CUSTOM FORMS
+# TODO: does not handle multiple choice fields right now
+#
+class CustomData(models.Model):
+    
+    full_name = models.CharField(verbose_name="Full name (first + last)", max_length=100)
+    email = models.EmailField(verbose_name="Email Address", max_length=100)
+    SID = models.IntegerField(verbose_name="Berkeley SID")
+    affiliation = models.CharField(verbose_name="Department/Affiliation", max_length=100)
+    full_time = models.BooleanField(verbose_name="Are you a full time student? (check this box if Yes)")
+    dob = models.DateField(verbose_name="Date of birth (mm/dd/yyyy)")
+    veteran = models.CharField(verbose_name='Are you a veteran or on active duty?', max_length=20)
+    tbi = models.CharField(verbose_name='Have you ever experienced a concussion, a traumatic brain injury, or a stroke?',
+                           max_length=20)
+    adhd = models.CharField(verbose_name='Have you been diagnosed with Attention Deficit, ADHD, or LD?', max_length=40)
+    meditation = models.CharField(verbose_name='Do you have experience meditating?', max_length=40)
+    video_games = models.CharField(verbose_name='Do you have experience playing video games?', max_length=40)
+    assessments = models.CharField(verbose_name='', max_length=40)

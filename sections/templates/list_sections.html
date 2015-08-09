@@ -32,25 +32,11 @@
                 <td>{{ section.time }}</td>
                 <td>{{ section.location }}</td>
                 <td>{{ section.enrollment }} / {{ section.max_size }}</td>
-                <td><a href="/sections/signup/{{ section.id }}">Sign up</a></td>
+                <td><a href="/sections/signup/{{ class_details.id }}/{{ section.id }}">Sign up</a></td>
             </tr>
         {% endfor %}
         </tbody>
     </table>
-
-    <h1>Add a new section</h1>
-
-    <form action="/sections/save/{{ class_details.id }}" method="post" role="form">
-        {% csrf_token %}
-
-        {% for field in form %}
-            <div class="form-group">
-                {{ field.errors }}
-                {{ field.label_tag }} {{ field }}
-            </div>
-        {% endfor %}
-        <input type="submit" value="Submit" class="btn btn-default" />
-    </form>
 
 </div>
 {% endblock %}
