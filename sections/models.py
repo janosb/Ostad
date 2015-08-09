@@ -2,8 +2,8 @@ from django.db import models
 
 
 class ClassDetails(models.Model):
-    title = models.CharField(null=False, max_length=20)
-    subtitle = models.CharField(null=False, max_length=40)
+    title = models.CharField(null=False, max_length=60)
+    subtitle = models.CharField(null=False, max_length=60)
 
     def to_string(self):
         return ": ".join([self.title, self.subtitle])
@@ -13,7 +13,7 @@ class ClassDetails(models.Model):
 
 
 class Section(models.Model):
-
+    parent_class = models.ForeignKey("ClassDetails")
     day_of_week = models.CharField(null=False, max_length=9)
     time_string = models.CharField(null=False, max_length=20)
     location = models.CharField(null=True, max_length=50)

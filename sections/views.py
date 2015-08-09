@@ -3,16 +3,19 @@ from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from models import Section, Student, ClassDetails, CustomData
-from .forms import SectionForm, StudentForm, CustomForm
+from .forms import SectionForm, StudentForm, CustomForm, ClassForm
 from .helpers import AddStatus, get_all_classes
 
 
 def show_classes(request):
-    return render(request, 'classes.html', {"classes": get_all_classes(), 'is_admin': request.user.is_authenticated()})
+    form = ClassForm()
+    return render(request, 'classes.html', {"classes": get_all_classes(), 'is_admin': request.user.is_authenticated(),
+                                            "form": form})
 
-def new_section(day, start_time, end_time, max_size=25, location=None):
+def new_section(class_id, day, start_time, end_time, max_size=25, location=None):
     time_str = "%s-%s" % (start_time, end_time)
-    section, created = Section.objects.get_or_create(day_of_week=day, time_string=time_str,
+    class_instance = ClassDetails.objects.get(id=class_id)
+    section, created = Section.objects.get_or_create(parent_class=class_instance, day_of_week=day, time_string=time_str,
                                                      location=location, max_size=max_size)
     if created:
         print "successfully created section on %s at time %s" % (day, time_str)
@@ -36,20 +39,22 @@ def update_enrollment_after_switch(previous_section, newer_section):
 
 
 def list_sections(request, class_id):
-    all_sections = Section.objects.all()
+    all_sections = Section.objects.filter(parent_class=class_id)
     json_list = []
     for section in all_sections:
         json_list.append(section.to_json())
     form = SectionForm()
 
     class_details = ClassDetails.objects.get(id=class_id)
-    return render(request, 'list_sections.html', {'form': form, 'current_list': json_list, 'class_details': class_details,
-                                                'classes': get_all_classes()})
+    return render(request, 'list_sections.html', {'form': form, 'current_list': json_list,
+                                                  'class_details': class_details,
+                                                  'classes': get_all_classes(),
+                                                  'is_admin': request.user.is_authenticated()})
 
 
 @login_required(redirect_field_name='/sections/sectionform/')
 def list_and_add_sections(request, class_id):
-    all_sections = Section.objects.all()
+    all_sections = Section.objects.filter(parent_class=class_id)
     json_list = []
     for section in all_sections:
         json_list.append(section.to_json())
@@ -80,7 +85,7 @@ def add_section(request, class_id):
                                                 'classes': get_all_classes()})
 
 
-def save_section(request):
+def save_section(request, class_id):
         # if this is a POST request we need to process the form data
     if request.method == 'POST':
         # create a form instance and populate it with data from the request:
@@ -88,9 +93,9 @@ def save_section(request):
         # check whether it's valid:
         if form.is_valid():
             data = form.cleaned_data
-            new_section(data.get("day_of_week"), data.get("t_start"), data.get("t_end"), location=data.get("location"),
+            new_section(class_id, data.get("day_of_week"), data.get("t_start"), data.get("t_end"), location=data.get("location"),
                         max_size=data.get("max_size"))
-            return HttpResponseRedirect('/sections')
+            return HttpResponseRedirect('/sections/%s' % class_id)
     else:
         return HttpResponseRedirect('/sections/add')
 
@@ -218,6 +223,28 @@ def remove_students(request):
         section.save()
     return HttpResponseRedirect('/sections')
 
+
+def save_class(request):
+    if request.method == 'POST':
+        # create a form instance and populate it with data from the request:
+        form = ClassForm(request.POST)
+        # check whether it's valid:
+        if form.is_valid():
+            data = form.cleaned_data
+            class_instance, created = ClassDetails.objects.get_or_create(title=data.get("title"), subtitle=data.get("subtitle"))
+            if not created:
+                return render(request, 'classes.html',
+                              {"classes": get_all_classes(), 'is_admin': request.user.is_authenticated(),
+                               "form": form, "error_message": "Class already exists"})
+            return HttpResponseRedirect('/sections/%d' % class_instance.id)
+    return HttpResponseRedirect('sections')
+
+
+# TODO: REMOVE THIS AFTER TESTING
+@login_required(redirect_field_name='/classes/delete')
+def remove_classes(request):
+    ClassDetails.objects.all().delete()
+    return HttpResponseRedirect('/sections')
 
 #
 # CUSTOM FORMS

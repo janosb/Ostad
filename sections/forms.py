@@ -22,7 +22,12 @@ def gen_days_choices():
         yield (day, day)
 
 
+class ClassForm(forms.Form):
+    title = forms.CharField(label='Class Name', required=True)
+    subtitle = forms.CharField(label='Subtitle', required=True)
+
 class SectionForm(forms.Form):
+    #parent_class = forms.HiddenInput(label='class_id', required=True)
     day_of_week = forms.ChoiceField(label='Day of week', choices=gen_days_choices(), required=True)
     t_start = forms.ChoiceField(label='Start time', choices=gen_start_time_choices(), required=True)
     t_end = forms.ChoiceField(label='End time', choices=gen_end_time_choices())

@@ -17,8 +17,26 @@
         <div class="col-lg-12">
             <h1>Add a class</h1>
 
-            <form action="/classes/add" method="post" name="Add_class" class="form-signin">
+            <form action="/classes/save" method="post" name="Add_class" class="form-horizontal">
                 {% csrf_token %}
+
+                {% if error_message %}
+                    <div class="has-error">{{ error_message }}</div>
+                {%  endif %}
+
+                {% for field in form.visible_fields %}
+                        <div class="form-group {% if field.errors %}has-error has-feedback{% endif %}">
+                        <div class="help-block with-errors">{{ field.errors }}</div>
+                          <label class="control-label" for="{{ field.id_for_label }}">{{ field.label }} </label>
+                           {% if field.help_text %}<div class="help-block">{{ field.help_text }}</div>{% endif %}
+                          <div class="col-sm-12">
+                               <div class="checkbox">{{ field }}</div>
+                          </div>
+
+                        </div>
+                {% endfor %}
+
+                <input type="submit" value="Submit" class="btn btn-default" />
             </form>
         </div>
         {% endif %}

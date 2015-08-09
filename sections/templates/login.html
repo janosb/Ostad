@@ -2,9 +2,9 @@
 {% block body %}
 <div class="container">
 	<div class="wrapper">
-		<form action="/login" method="post" name="Login_Form" class="form-signin">
+		<form action="/login" method="post" name="add_class" class="form-horizontal">
             {% csrf_token %}
-		    <h3 class="form-signin-heading">Admin Sign In</h3>
+		    <h3 class="form-heading">Admin Sign In</h3>
 			  <hr class="colorgraph"><br>
 
 			  <input type="text" class="form-control" name="username" placeholder="Username" required="" autofocus="" />

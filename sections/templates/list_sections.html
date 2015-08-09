@@ -38,5 +38,21 @@
         </tbody>
     </table>
 
+    {%  if is_admin %}
+        <h1>Add a new section</h1>
+
+        <form action="/sections/save/{{ class_details.id }}" method="post" role="form">
+            {% csrf_token %}
+
+            {% for field in form %}
+                <div class="form-group">
+                    {{ field.errors }}
+                    {{ field.label_tag }} {{ field }}
+                </div>
+            {% endfor %}
+            <input type="submit" value="Submit" class="btn btn-default" />
+        </form>
+    {% endif %}
+
 </div>
 {% endblock %}

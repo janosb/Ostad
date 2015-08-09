@@ -33,6 +33,9 @@ urlpatterns = [
     url(r'^students/save/(?P<class_id>\d+)$', 'sections.views.save_student'),
     url(r'^students/delete$', 'sections.views.remove_students'),
 
+    url(r'^classes/save', 'sections.views.save_class'),
+    url(r'^classes/delete', 'sections.views.remove_classes'),
+
     #url(r'^$', 'sections.views.custom_signup_form'),
     #url(r'^customform/save$', 'sections.views.custom_form_save')
 
