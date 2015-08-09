@@ -42,7 +42,8 @@ class Student(models.Model):
 
     full_name = models.CharField(null=False, max_length=100)
     email_address = models.CharField(null=False, max_length=100)
-    current_section = models.ForeignKey("Section")
+    current_section = models.ForeignKey("Section", null=True)
+    parent_class = models.ForeignKey("ClassDetails", null=False)
 
     def set_section(self, day, time):
         try:
@@ -56,6 +57,9 @@ class Student(models.Model):
 
     def __unicode__(self):
         return self.full_name
+
+    class Meta:
+        unique_together = ("full_name", "parent_class")
 
 
 

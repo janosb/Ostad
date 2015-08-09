@@ -100,6 +100,7 @@ def remove_sections(request, class_id):
 
 def new_student(full_name, email, class_id, section_id):
     try:
+        class_instance = ClassDetails.objects.get(id=class_id)
         section = Section.objects.get(id=section_id)
         if section.enrollment >= section.max_size:
             print "cannot add to full section %d" % section_id
@@ -107,28 +108,33 @@ def new_student(full_name, email, class_id, section_id):
     except Section.DoesNotExist:
         print "invalid section id %d" % section_id
         return AddStatus.NON_EXISTENT_SECTION
+    except ClassDetails.DoesNotExist:
+        print "invalid class id %d" % class_id
+        return AddStatus.NON_EXISTENT_CLASS
 
     # check for full name in db
     try:
-        student = Student.objects.get(full_name=full_name)
-        return AddStatus.STUDENT_ALREADY_EXISTS
+        student = Student.objects.get(full_name=full_name, parent_class=class_instance)
     except Student.DoesNotExist:
         # expected behavior
         pass
 
     # check for email in db
     try:
-        student = Student.objects.get(email_address=email)
+        student = Student.objects.get(email_address=email, parent_class=class_instance)
         return AddStatus.STUDENT_ALREADY_EXISTS
     except Student.DoesNotExist:
         # expected behavior
         pass
 
-    student, created = Student.objects.get_or_create(full_name=full_name, email_address=email, current_section=section)
+    student, created = Student.objects.get_or_create(full_name=full_name, parent_class=class_instance)
     if not created:
         return AddStatus.STUDENT_ALREADY_EXISTS
-    student.save()
-    return AddStatus.SUCCESS
+    else:
+        student.email_address = email
+        student.current_section = section
+        student.save()
+        return AddStatus.SUCCESS
 
 
 def add_student(request, class_id, section_id):
@@ -140,8 +146,8 @@ def add_student(request, class_id, section_id):
     form = StudentForm()
 
     class_details = ClassDetails.objects.get(id=class_id)
-    return render(request, 'new_student.html', {'form': form, 'section_info': section.to_json(), 'class_details': class_details,
-                                                'classes': get_all_classes()})
+    return render(request, 'new_student.html', {'form': form, 'section_info': section.to_json(),
+                                                'class_details': class_details, 'classes': get_all_classes()})
 
 
 def save_student(request, class_id):
@@ -159,7 +165,7 @@ def save_student(request, class_id):
                 section = Section.objects.get(id=section_id)
                 section.enrollment += 1
                 section.save()
-                message = "We have added you to the section on %s %s in %s. Current enrollement is %d / %d." \
+                message = "We have added you to the section on %s %s in %s. Current enrollment is %d / %d." \
                           % (section.day_of_week, section.time_string, section.location,
                              section.enrollment, section.max_size)
                 return render(request, 'add_result.html', {'title': 'Success!', 'message': message,
@@ -170,6 +176,9 @@ def save_student(request, class_id):
                 if add_status == AddStatus.FULL_SECTION:
                     title = 'Hmmm...'
                     message = "Sorry, that section is already full! Please register for another."
+                elif add_status == AddStatus.NON_EXISTENT_CLASS:
+                    title = 'Hmmm...'
+                    message = "Sorry, that class does not exist! Please register for another."
                 elif add_status == AddStatus.NON_EXISTENT_SECTION:
                     title = 'Hmmm...'
                     message = "Sorry, that section does not exist! Please register for another."
@@ -182,6 +191,7 @@ def save_student(request, class_id):
                         student = Student.objects.filter(email_address=data.get("email"))
                     student = student.first()
                     previous_section = student.current_section
+                    previous_class_id = previous_section.parent_class.id
                     if previous_section.id == section_id:
                         title = 'Already registered'
                         message = "We found you in our database already. Please check your status below. See you in class!"
