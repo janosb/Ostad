@@ -4,3 +4,5 @@ matplotlib==1.4.3
 psycopg2==2.5
 simplejson==3.3.0
 uwsgi==2.0.11
+Pillow==2.9.0
+django-simple-captcha==0.4.6
