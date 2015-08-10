@@ -80,9 +80,15 @@
                     <a href="/sections/{{ class.id }}"><i class="fa fa-fw fa-edit"></i> {{ class.title }}</a>
                 </li>
                 {% endfor %}
-                <li>
-                    <a href="/loginpage"><i class="fa fa-fw fa-table"></i> Admin</a>
-                </li>
+                {% if is_admin %}
+                    <li>
+                        <a href="/logout"><i class="fa fa-fw fa-table"></i> Logout</a>
+                    </li>
+                {% else %}
+                    <li>
+                        <a href="/loginpage"><i class="fa fa-fw fa-table"></i> Admin</a>
+                    </li>
+                {% endif %}
                 <!--<li>
                     <a href="/sections"><i class="fa fa-fw fa-bar-chart-o"></i> Charts</a>
                 </li>-->

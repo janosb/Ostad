@@ -69,7 +69,7 @@ def add_section(request, class_id):
 
     class_details = ClassDetails.objects.get(id=class_id)
     return render(request, 'new_section.html', {'form': form, 'current_list': '', 'class_details': class_details,
-                                                'classes': get_all_classes()})
+                                                'classes': get_all_classes(), 'is_admin': request.user.is_authenticated()})
 
 
 def save_section(request, class_id):
@@ -151,7 +151,8 @@ def add_student(request, class_id, section_id):
 
     class_details = ClassDetails.objects.get(id=class_id)
     return render(request, 'new_student.html', {'form': form, 'section_info': section.to_json(),
-                                                'class_details': class_details, 'classes': get_all_classes()})
+                                                'class_details': class_details, 'classes': get_all_classes(),
+                                                'is_admin': request.user.is_authenticated()})
 
 
 def save_student(request, class_id):
@@ -209,12 +210,14 @@ def save_student(request, class_id):
                         title = "Switched Sections"
                         message = "You have successfully switched sections. Please check your status below. See you in class!"
                 return render(request, 'add_result.html', {'title': title, 'message': message, 'user_info': student,
-                                                'classes': get_all_classes(), 'class_details': class_instance})
+                                                           'classes': get_all_classes(), 'class_details': class_instance,
+                                                           'is_admin': request.user.is_authenticated()})
 
         else:
             section = Section.objects.get(id=section_id)
             return render(request, 'new_student.html', {'form': form, 'section_info': section.to_json(),
-                                                        'class_details': class_instance, 'classes': get_all_classes()})
+                                                        'class_details': class_instance, 'classes': get_all_classes(),
+                                                        'is_admin': request.user.is_authenticated()})
     else:
         return HttpResponseRedirect('/sections')
 
