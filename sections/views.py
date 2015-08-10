@@ -89,8 +89,12 @@ def save_section(request, class_id):
 
 # TODO: REMOVE THIS AFTER TESTING
 @login_required()
-def remove_sections(request, class_id):
-    if class_id:
+def remove_sections(request, class_id, section_id):
+    if class_id and section_id:
+        class_instance = ClassDetails.objects.get(id=class_id)
+        Section.objects.get(parent_class=class_instance, id=section_id).delete()
+        return HttpResponseRedirect('/sections/%s' % class_id)
+    elif class_id and not section_id:
         class_instance = ClassDetails.objects.get(id=class_id)
         Section.objects.filter(parent_class=class_instance).delete()
     else:

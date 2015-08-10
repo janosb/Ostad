@@ -24,7 +24,7 @@
             <th>Time</th>
             <th>Location</th>
             <th>Enrollment</th>
-            <th></th>
+            <th>Actions</th>
         </tr>
         </thead>
         <tbody>
@@ -34,7 +34,12 @@
                 <td>{{ section.time }}</td>
                 <td>{{ section.location }}</td>
                 <td>{{ section.enrollment }} / {{ section.max_size }}</td>
-                <td><a href="/sections/signup/{{ class_details.id }}/{{ section.id }}">Sign up</a></td>
+                <td>
+                    <a href="/sections/signup/{{ class_details.id }}/{{ section.id }}">Sign up</a>
+                {% if is_admin %}
+                    | <a href="/sections/delete/{{ class_details.id }}/{{ section.id }}">Delete</a>
+                {% endif %}
+                </td>
             </tr>
         {% endfor %}
         </tbody>

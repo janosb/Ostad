@@ -28,8 +28,9 @@ urlpatterns = [
     url(r'^sections/save/(?P<class_id>\d+)$', 'sections.views.save_section'),
     url(r'^sections/delete$', 'sections.views.remove_sections'),
     url(r'^sections/delete/(?P<class_id>\d+)$', 'sections.views.remove_sections'),
-
+    url(r'^sections/delete/(?P<class_id>\d+)/(?P<section_id>\d+)$', 'sections.views.remove_sections'),
     url(r'^sections/signup/(?P<class_id>\d+)/(?P<section_id>\d+)$', 'sections.views.add_student'),
+
     url(r'^students/save/(?P<class_id>\d+)$', 'sections.views.save_student'),
     url(r'^students/delete$', 'sections.views.remove_students'),
     url(r'^students/delete/(?P<class_id>\d+)/(?P<student_id>\d+)$', 'sections.views.remove_students'),
