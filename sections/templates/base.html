@@ -43,6 +43,9 @@
     <!-- login page -->
     <link href="{% static 'css/login.css' %}" rel="stylesheet" type="text/css"  />
 
+    <!-- Sticky footer -->
+    <link href="{% static 'css/sticky-footer.css' %}" rel="stylesheet" type="text/css"  />
+
     <!--<style>
         ul
         {
@@ -67,7 +70,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="#">OSTAD - Open Source Teachers' Administrative Device</a>
+            <a class="navbar-brand" href="/">OSTAD - Open Source Teachers' Administrative Device</a>
         </div>
         <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
         <div class="collapse navbar-collapse navbar-ex1-collapse">
@@ -103,8 +106,14 @@
             {% block body %}
             {% endblock %}
         </div>
+
+        <footer class="footer">
+                <p class="text-muted">OSTAD: Open Source Teachers' Administrative Device</p>
+                <p class="text-muted"><a href="mailto:janosb@berkeley.edu">janosb@berkeley.edu</a></p>
+        </footer>
     </div>
 </div>
+
 
 </body>
 </html>
