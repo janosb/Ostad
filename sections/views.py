@@ -1,10 +1,12 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
+from django.core.mail import EmailMessage
 from django.contrib.auth.decorators import login_required
 from models import Section, Student, ClassDetails, CustomData
 from .forms import SectionForm, StudentForm, CustomForm, ClassForm
 from .helpers import AddStatus, get_all_classes
+from ostad import settings
 
 
 def show_classes(request):
@@ -90,15 +92,16 @@ def save_section(request, class_id):
 # TODO: REMOVE THIS AFTER TESTING
 @login_required()
 def remove_sections(request, class_id, section_id):
-    if class_id and section_id:
-        class_instance = ClassDetails.objects.get(id=class_id)
-        Section.objects.get(parent_class=class_instance, id=section_id).delete()
-        return HttpResponseRedirect('/sections/%s' % class_id)
-    elif class_id and not section_id:
-        class_instance = ClassDetails.objects.get(id=class_id)
-        Section.objects.filter(parent_class=class_instance).delete()
-    else:
-        Section.objects.all().delete()
+    if settings.DEBUG:
+        if class_id and section_id:
+            class_instance = ClassDetails.objects.get(id=class_id)
+            Section.objects.get(parent_class=class_instance, id=section_id).delete()
+            return HttpResponseRedirect('/sections/%s' % class_id)
+        elif class_id and not section_id:
+            class_instance = ClassDetails.objects.get(id=class_id)
+            Section.objects.filter(parent_class=class_instance).delete()
+        else:
+            Section.objects.all().delete()
     return HttpResponseRedirect('/sections')
 
 
@@ -157,6 +160,9 @@ def add_student(request, class_id, section_id):
 
 def save_student(request, class_id):
     class_instance = ClassDetails.objects.get(id=class_id)
+    email_subject = '%s: Confirmation of enrollment' % class_instance.title
+    email_disclaimer = "\n\nIf you believe this to be erroneous, please contact the me at %s" \
+                       % class_instance.admin_email + "\n\nSincerely, \n%s" % class_instance.admin_name
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
         # create a form instance and populate it with data from the request:
@@ -173,6 +179,10 @@ def save_student(request, class_id):
                 message = "We have added you to the section on %s %s in %s. Current enrollment is %d / %d." \
                           % (section.day_of_week, section.time_string, section.location,
                              section.enrollment, section.max_size)
+
+                email_message = ("Dear %s,\n\n" % data.get("full_name")) + message + email_disclaimer
+                EmailMessage(email_subject, email_message, to=[data.get("email")]).send()
+
                 return render(request, 'add_result.html', {'title': 'Success!', 'message': message,
                                                 'class_details': class_instance,
                                                 'classes': get_all_classes()})
@@ -187,9 +197,6 @@ def save_student(request, class_id):
                 elif add_status == AddStatus.NON_EXISTENT_SECTION:
                     title = 'Hmmm...'
                     message = "Sorry, that section does not exist! Please register for another."
-                elif add_status == AddStatus.INVALID_EMAIL:
-                    title = 'Hmmm...'
-                    message = "Invalid email. Please provide your university-issued (berkeley.edu) email address."
                 elif add_status == AddStatus.STUDENT_ALREADY_EXISTS:
                     student = Student.objects.filter(full_name=data.get("full_name"))
                     if len(student) != 1:
@@ -208,7 +215,11 @@ def save_student(request, class_id):
                         update_enrollment_after_switch(previous_section, newer_section)
 
                         title = "Switched Sections"
-                        message = "You have successfully switched sections. Please check your status below. See you in class!"
+                        message = "You have successfully switched sections to the class on %s %s in %s. Current enrollment is %d / %d. See you in class!" \
+                          % (newer_section.day_of_week, newer_section.time_string, newer_section.location,
+                             newer_section.enrollment, newer_section.max_size)
+                        email_message = ("Dear %s,\n\n" % data.get("full_name")) + message + email_disclaimer
+                        EmailMessage(email_subject, email_message, to=[data.get("email")]).send()
                 return render(request, 'add_result.html', {'title': title, 'message': message, 'user_info': student,
                                                            'classes': get_all_classes(), 'class_details': class_instance,
                                                            'is_admin': request.user.is_authenticated()})
@@ -225,20 +236,21 @@ def save_student(request, class_id):
 # TODO: REMOVE THIS AFTER TESTING
 @login_required()
 def remove_students(request, class_id, student_id):
-    if not student_id:
-        Student.objects.all().delete()
-        for section in Section.objects.all():
-            section.reset_enrollment()
-            section.save()
-    else:
-        try:
-            student = Student.objects.get(id=student_id, parent_class_id=class_id)
-            section = student.current_section
-            section.delete_student()
-            section.save()
-            student.delete()
-        except Student.DoesNotExist:
-            print "Invalid class id %s or student id %s" % (class_id, student_id)
+    if settings.DEBUG:
+        if not student_id:
+            Student.objects.all().delete()
+            for section in Section.objects.all():
+                section.reset_enrollment()
+                section.save()
+        else:
+            try:
+                student = Student.objects.get(id=student_id, parent_class_id=class_id)
+                section = student.current_section
+                section.delete_student()
+                section.save()
+                student.delete()
+            except Student.DoesNotExist:
+                print "Invalid class id %s or student id %s" % (class_id, student_id)
     return HttpResponseRedirect('/sections/%s' % class_id)
 
 
@@ -261,7 +273,8 @@ def save_class(request):
 # TODO: REMOVE THIS AFTER TESTING
 @login_required()
 def remove_classes(request):
-    ClassDetails.objects.all().delete()
+    if settings.DEBUG:
+        ClassDetails.objects.all().delete()
     return HttpResponseRedirect('/sections')
 
 #

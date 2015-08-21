@@ -1,9 +1,12 @@
 from django.db import models
+from ostad import settings
 
 
 class ClassDetails(models.Model):
     title = models.CharField(null=False, max_length=60)
     subtitle = models.CharField(null=False, max_length=60)
+    admin_email = models.CharField(null=False, max_length=100, default=settings.ADMIN_EMAIL)
+    admin_name = models.CharField(null=False, max_length=100, default=settings.ADMIN_NAME)
 
     def to_string(self):
         return ": ".join([self.title, self.subtitle])

@@ -1,3 +1,6 @@
+import os
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 DEBUG = False
 TEMPLATE_DEBUG = False
 
@@ -13,3 +16,10 @@ DATABASES = {
         'PORT': '5432',                      # Set to empty string for default. Not used with sqlite3.
     }
 }
+
+EMAIL_HOST_USER = 'my_address@gmail.com'
+EMAIL_HOST_PASSWORD = 'app_specific_password'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+ADMIN_EMAIL = "some_email@gmail.com"
+ADMIN_NAME = "Some Name"
