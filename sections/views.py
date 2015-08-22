@@ -224,18 +224,15 @@ def save_student(request, class_id):
         return HttpResponseRedirect('/sections')
 
 
-# TODO: REMOVE THIS AFTER TESTING
 @login_required()
 def remove_students(request, class_id, student_id):
-    if settings.DEBUG:
-        if not student_id:
-            Student.objects.all().delete()
-        else:
-            try:
-                student = Student.objects.get(id=student_id, parent_class_id=class_id)
-                student.delete()
-            except Student.DoesNotExist:
-                print "Invalid class id %s or student id %s" % (class_id, student_id)
+    if not student_id and settings.DEBUG:
+        Student.objects.filter(parent_class_id=class_id).delete()
+    else:
+        try:
+            Student.objects.get(id=student_id, parent_class_id=class_id).delete()
+        except Student.DoesNotExist:
+            print "Invalid class id %s or student id %s" % (class_id, student_id)
     return HttpResponseRedirect('/sections/%s' % class_id)
 
 
