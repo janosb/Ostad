@@ -33,13 +33,6 @@ def new_section(class_id, day, start_time, end_time, max_size=25, location=None)
     section.save()
 
 
-def update_enrollment_after_switch(previous_section, newer_section):
-    previous_section.delete_student()
-    previous_section.save()
-    newer_section.add_student()
-    newer_section.save()
-
-
 def list_sections(request, class_id):
     all_sections = Section.objects.filter(parent_class=class_id).order_by('id')
     json_list = []
@@ -211,8 +204,6 @@ def save_student(request, class_id):
                         newer_section = Section.objects.get(id=section_id)
                         student.current_section = newer_section
                         student.save()
-                        #update enrollment numbers
-                        update_enrollment_after_switch(previous_section, newer_section)
 
                         title = "Switched Sections"
                         message = "You have successfully switched sections to the class on %s %s in %s. Current enrollment is %d / %d. See you in class!" \
@@ -239,15 +230,9 @@ def remove_students(request, class_id, student_id):
     if settings.DEBUG:
         if not student_id:
             Student.objects.all().delete()
-            for section in Section.objects.all():
-                section.reset_enrollment()
-                section.save()
         else:
             try:
                 student = Student.objects.get(id=student_id, parent_class_id=class_id)
-                section = student.current_section
-                section.delete_student()
-                section.save()
                 student.delete()
             except Student.DoesNotExist:
                 print "Invalid class id %s or student id %s" % (class_id, student_id)

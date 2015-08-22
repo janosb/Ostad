@@ -26,17 +26,11 @@ class Section(models.Model):
     def to_json(self):
         return {"day": self.day_of_week, "time": self.time_string,
                          "location": self.location, "max_size": self.max_size,
-                         "enrollment": self.enrollment, "id": self.id,
-                         "students": Student.objects.filter(current_section=self.id).values()}
+                         "enrollment": self.get_enrollment(), "id": self.id,
+                         "students": self.student_set.values()}
 
-    def reset_enrollment(self):
-        self.enrollment = 0
-
-    def add_student(self):
-        self.enrollment += 1
-
-    def delete_student(self):
-        self.enrollment -= 1
+    def get_enrollment(self):
+        return self.student_set.count()
 
     def __unicode__(self):
         return "/".join([self.day_of_week, self.time_string, self.location])

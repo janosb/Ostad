@@ -34,7 +34,7 @@ def logout_user(request):
 # TODO: remove after testing
 @login_required()
 def generate_mock_data(request):
-    from sections.models import *
+    from sections.models import ClassDetails, Section, Student
 
     ClassDetails.objects.all().delete()
     classes = [
@@ -66,7 +66,6 @@ def generate_mock_data(request):
                                                          )
             this_student, created = Student.objects.get_or_create(parent_class=this_class, current_section=this_section,
                                                             full_name=student["name"], email_address=student["email"])
-            this_section.add_student()
             this_section.save()
 
     return HttpResponseRedirect("/")
