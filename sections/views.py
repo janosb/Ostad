@@ -102,7 +102,7 @@ def new_student(full_name, email, class_id, section_id):
     try:
         class_instance = ClassDetails.objects.get(id=class_id)
         section = Section.objects.get(id=section_id)
-        if section.enrollment >= section.max_size:
+        if section.get_enrollment() >= section.max_size:
             print "cannot add to full section %d" % section_id
             return AddStatus.FULL_SECTION
     except Section.DoesNotExist:
@@ -114,14 +114,14 @@ def new_student(full_name, email, class_id, section_id):
 
     # check for full name in db
     try:
-        student = Student.objects.get(full_name=full_name, parent_class=class_instance)
+        Student.objects.get(full_name=full_name, parent_class=class_instance)
     except Student.DoesNotExist:
         # expected behavior
         pass
 
     # check for email in db
     try:
-        student = Student.objects.get(email_address=email, parent_class=class_instance)
+        Student.objects.get(email_address=email, parent_class=class_instance)
         return AddStatus.STUDENT_ALREADY_EXISTS
     except Student.DoesNotExist:
         # expected behavior
@@ -167,11 +167,9 @@ def save_student(request, class_id):
             add_status = new_student(data.get("full_name"), data.get("email"), class_id, section_id)
             if add_status == AddStatus.SUCCESS:
                 section = Section.objects.get(id=section_id)
-                section.enrollment += 1
-                section.save()
                 message = "We have added you to the section on %s %s in %s. Current enrollment is %d / %d." \
                           % (section.day_of_week, section.time_string, section.location,
-                             section.enrollment, section.max_size)
+                             section.get_enrollment(), section.max_size)
 
                 email_message = ("Dear %s,\n\n" % data.get("full_name")) + message + email_disclaimer
                 EmailMessage(email_subject, email_message, to=[data.get("email")]).send()
@@ -208,7 +206,7 @@ def save_student(request, class_id):
                         title = "Switched Sections"
                         message = "You have successfully switched sections to the class on %s %s in %s. Current enrollment is %d / %d. See you in class!" \
                           % (newer_section.day_of_week, newer_section.time_string, newer_section.location,
-                             newer_section.enrollment, newer_section.max_size)
+                             newer_section.get_enrollment(), newer_section.max_size)
                         email_message = ("Dear %s,\n\n" % data.get("full_name")) + message + email_disclaimer
                         EmailMessage(email_subject, email_message, to=[data.get("email")]).send()
                 return render(request, 'add_result.html', {'title': title, 'message': message, 'user_info': student,

@@ -21,7 +21,6 @@ class Section(models.Model):
     time_string = models.CharField(null=False, max_length=20)
     location = models.CharField(null=True, max_length=50)
     max_size = models.IntegerField(null=False)
-    enrollment = models.IntegerField(null=False, default=0)
 
     def to_json(self):
         return {"day": self.day_of_week, "time": self.time_string,
