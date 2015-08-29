@@ -154,7 +154,7 @@ def add_student(request, class_id, section_id):
 def save_student(request, class_id):
     class_instance = ClassDetails.objects.get(id=class_id)
     email_subject = '%s: Confirmation of enrollment' % class_instance.title
-    email_disclaimer = "\n\nIf you believe this to be erroneous, please contact the me at %s" \
+    email_disclaimer = "\n\nIf you believe this to be erroneous, please contact me at %s" \
                        % class_instance.admin_email + "\n\nSincerely, \n%s" % class_instance.admin_name
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
